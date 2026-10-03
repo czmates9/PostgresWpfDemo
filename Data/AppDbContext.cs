@@ -9,8 +9,16 @@ namespace PostgresWpfDemo.Data
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
-            optionsBuilder.UseNpgsql(
-                "Host=localhost;Port=5432;Database=PostgresWpfDemoDb;Username=postgres;Password=pro147fask");
+            string? connectionString =
+                Environment.GetEnvironmentVariable("POSTGRESWPFDEMO_CONNECTION");
+
+            if (string.IsNullOrWhiteSpace(connectionString))
+            {
+                throw new InvalidOperationException(
+                    "Chybí environment variable POSTGRESWPFDEMO_CONNECTION.");
+            }
+
+            optionsBuilder.UseNpgsql(connectionString);
         }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -27,11 +35,11 @@ namespace PostgresWpfDemo.Data
                 entity.Property(x => x.Name)
                     .HasColumnName("name");
 
+                entity.Property(x => x.Email)
+                    .HasColumnName("email");
+
                 entity.Property(x => x.CreatedAt)
                     .HasColumnName("created_at");
-
-                entity.Property(x => x.Email)
-    .HasColumnName("email");
             });
         }
     }
