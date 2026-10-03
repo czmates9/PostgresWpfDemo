@@ -1,4 +1,3 @@
-@'
 name: Build
 
 on:
@@ -26,4 +25,3 @@ jobs:
 
       - name: Build
         run: dotnet build --no-restore --configuration Release
-'@ | Set-Content .github\workflows\build.yml
