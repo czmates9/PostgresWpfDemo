@@ -24,7 +24,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\PostgresWpfDemo.csproj" />
+    <ProjectReference Include="..\..\src\PostgresWpfDemo\PostgresWpfDemo.csproj" />
   </ItemGroup>
 
 </Project>
