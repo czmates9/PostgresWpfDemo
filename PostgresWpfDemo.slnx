@@ -1,0 +1,8 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/PostgresWpfDemo/PostgresWpfDemo.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/PostgresWpfDemo.Tests/PostgresWpfDemo.Tests.csproj" />
+  </Folder>
+</Solution>
