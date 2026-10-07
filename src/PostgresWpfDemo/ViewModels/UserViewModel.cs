@@ -1,10 +1,12 @@
-﻿using PostgresWpfDemo.Commands;
-using PostgresWpfDemo.Models;
-using PostgresWpfDemo.Services;
-using System.Collections.ObjectModel;
+﻿using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Windows.Input;
+using PostgresWpfDemo.Commands;
+using PostgresWpfDemo.Models;
+using PostgresWpfDemo.Services;
+using PostgresWpfDemo.Validation;
+
 
 namespace PostgresWpfDemo.ViewModels
 {
@@ -14,7 +16,8 @@ namespace PostgresWpfDemo.ViewModels
         public ICommand UpdateCommand { get; }
         public ICommand DeleteCommand { get; }
 
-        private readonly UserService _userService;
+        private readonly IUserService _userService;
+        private readonly UserValidator _userValidator;
 
         private User? _selectedUser;
         private string _newUserName = string.Empty;
@@ -46,11 +49,14 @@ namespace PostgresWpfDemo.ViewModels
             }
         }
 
-        public UserViewModel()
+        public UserViewModel(
+            IUserService userService,
+            UserValidator userValidator)
         {
-            _userService = new UserService();
+            _userService = userService;
+            _userValidator = userValidator;
 
-            Users = new ObservableCollection<User>();
+            Users = [];
 
             AddCommand = new AsyncRelayCommand(AddUserAsync);
             UpdateCommand = new AsyncRelayCommand(UpdateUserAsync);
@@ -59,14 +65,14 @@ namespace PostgresWpfDemo.ViewModels
 
         private async Task AddUserAsync()
         {
-            string name = NewUserName.Trim();
+            var validationResult = _userValidator.ValidateName(NewUserName);
 
-            if (string.IsNullOrWhiteSpace(name))
+            if (validationResult != UserNameValidationResult.Valid)
                 return;
 
             var user = new User
             {
-                Name = name,
+                Name = NewUserName.Trim(),
                 CreatedAt = DateTime.UtcNow
             };
 
@@ -79,15 +85,15 @@ namespace PostgresWpfDemo.ViewModels
 
         private async Task UpdateUserAsync()
         {
-            if (SelectedUser == null)
+            if (SelectedUser is null)
                 return;
 
-            string name = NewUserName.Trim();
+            var validationResult = _userValidator.ValidateName(NewUserName);
 
-            if (string.IsNullOrWhiteSpace(name))
+            if (validationResult != UserNameValidationResult.Valid)
                 return;
 
-            SelectedUser.Name = name;
+            SelectedUser.Name = NewUserName.Trim();
 
             await _userService.UpdateAsync(SelectedUser);
 

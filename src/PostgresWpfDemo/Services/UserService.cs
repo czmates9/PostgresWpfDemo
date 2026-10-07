@@ -2,44 +2,48 @@
 using PostgresWpfDemo.Data;
 using PostgresWpfDemo.Models;
 
-namespace PostgresWpfDemo.Services
+namespace PostgresWpfDemo.Services;
+
+public sealed class UserService : IUserService
 {
-    public class UserService
+    public async Task<List<User>> GetAllAsync()
     {
-        public async Task<List<User>> GetAllAsync()
-        {
-            using var db = new AppDbContext();
+        await using var db = new AppDbContext();
 
-            return await db.Users
-                .OrderBy(x => x.Id)
-                .ToListAsync();
-        }
+        return await db.Users
+            .OrderBy(user => user.Id)
+            .ToListAsync();
+    }
 
-        public async Task AddAsync(User user)
-        {
-            using var db = new AppDbContext();
+    public async Task AddAsync(User user)
+    {
+        await using var db = new AppDbContext();
 
-            db.Users.Add(user);
+        db.Users.Add(user);
 
-            await db.SaveChangesAsync();
-        }
+        await db.SaveChangesAsync();
+    }
 
-        public async Task UpdateAsync(User user)
-        {
-            using var db = new AppDbContext();
+    public async Task UpdateAsync(User user)
+    {
+        await using var db = new AppDbContext();
 
-            db.Users.Update(user);
+        var existingUser = await db.Users.FindAsync(user.Id);
 
-            await db.SaveChangesAsync();
-        }
+        if (existingUser is null)
+            return;
 
-        public async Task DeleteAsync(User user)
-        {
-            using var db = new AppDbContext();
+        existingUser.Name = user.Name;
 
-            db.Users.Remove(user);
+        await db.SaveChangesAsync();
+    }
 
-            await db.SaveChangesAsync();
-        }
+    public async Task DeleteAsync(User user)
+    {
+        await using var db = new AppDbContext();
+
+        db.Users.Remove(user);
+
+        await db.SaveChangesAsync();
     }
 }

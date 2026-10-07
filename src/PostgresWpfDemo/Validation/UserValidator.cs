@@ -1,13 +1,23 @@
-﻿namespace PostgresWpfDemo.Validation
-{
-    public class UserValidator
-    {
-        public bool IsValidName(string? name)
-        {
-            if (string.IsNullOrWhiteSpace(name))
-                return false;
+﻿namespace PostgresWpfDemo.Validation;
 
-            return name.Trim().Length >= 2;
-        }
+public enum UserNameValidationResult
+{
+    Valid,
+    NameRequired,
+    NameTooShort
+}
+
+public sealed class UserValidator
+{
+    public UserNameValidationResult ValidateName(string? name)
+    {
+        if (string.IsNullOrWhiteSpace(name))
+            return UserNameValidationResult.NameRequired;
+
+        var trimmedName = name.Trim();
+
+        return trimmedName.Length < 2
+            ? UserNameValidationResult.NameTooShort
+            : UserNameValidationResult.Valid;
     }
 }

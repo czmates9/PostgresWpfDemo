@@ -1,47 +1,23 @@
 ﻿using PostgresWpfDemo.Validation;
-using Xunit;
 
-namespace PostgresWpfDemo.Tests
+namespace PostgresWpfDemo.Tests;
+
+public sealed class UserValidatorTests
 {
-    public class UserValidatorTests
+    [Theory]
+    [InlineData("Matous", UserNameValidationResult.Valid)]
+    [InlineData("A", UserNameValidationResult.NameTooShort)]
+    [InlineData("", UserNameValidationResult.NameRequired)]
+    [InlineData("   ", UserNameValidationResult.NameRequired)]
+    [InlineData(null, UserNameValidationResult.NameRequired)]
+    public void ValidateName_ReturnsExpectedResult(
+        string? name,
+        UserNameValidationResult expectedResult)
     {
-        [Fact]
-        public void IsValidName_ValidName_ReturnsTrue()
-        {
-            // Arrange
-            var validator = new UserValidator();
+        var validator = new UserValidator();
 
-            // Act
-            bool result = validator.IsValidName("Matous");
+        var actualResult = validator.ValidateName(name);
 
-            // Assert
-            Assert.True(result);
-        }
-
-        [Fact]
-        public void IsValidName_EmptyName_ReturnsFalse()
-        {
-            // Arrange
-            var validator = new UserValidator();
-
-            // Act
-            bool result = validator.IsValidName("");
-
-            // Assert
-            Assert.False(result);
-        }
-
-        [Fact]
-        public void IsValidName_WhitespaceOnly_ReturnsFalse()
-        {
-            // Arrange
-            var validator = new UserValidator();
-
-            // Act
-            bool result = validator.IsValidName("   ");
-
-            // Assert
-            Assert.False(result);
-        }
+        Assert.Equal(expectedResult, actualResult);
     }
 }
