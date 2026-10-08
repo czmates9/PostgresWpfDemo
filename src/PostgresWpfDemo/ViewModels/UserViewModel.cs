@@ -12,9 +12,9 @@ namespace PostgresWpfDemo.ViewModels
 {
     public class UserViewModel : INotifyPropertyChanged
     {
-        public ICommand AddCommand { get; }
-        public ICommand UpdateCommand { get; }
-        public ICommand DeleteCommand { get; }
+        public AsyncRelayCommand AddCommand { get; }
+        public AsyncRelayCommand UpdateCommand { get; }
+        public AsyncRelayCommand DeleteCommand { get; }
 
         private readonly IUserService _userService;
         private readonly UserValidator _userValidator;
