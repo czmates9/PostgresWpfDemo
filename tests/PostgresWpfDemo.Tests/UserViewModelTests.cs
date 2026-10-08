@@ -1,4 +1,5 @@
-﻿using PostgresWpfDemo.Tests.Fakes;
+﻿using PostgresWpfDemo.Models;
+using PostgresWpfDemo.Tests.Fakes;
 using PostgresWpfDemo.Validation;
 using PostgresWpfDemo.ViewModels;
 
@@ -51,4 +52,52 @@ public sealed class UserViewModelTests
         // Assert
         Assert.Empty(userService.Users);
     }
+
+
+
+
+    [Fact]
+    public void UpdateAndDeleteCommands_NoSelectedUser_CannotExecute()
+    {
+        // Arrange
+        var userService = new FakeUserService();
+        var validator = new UserValidator();
+
+        var viewModel = new UserViewModel(
+            userService,
+            validator);
+
+        // Act
+        var canUpdate = viewModel.UpdateCommand.CanExecute(null);
+        var canDelete = viewModel.DeleteCommand.CanExecute(null);
+
+        // Assert
+        Assert.False(canUpdate);
+        Assert.False(canDelete);
+    }
+
+    [Fact]
+    public void UpdateAndDeleteCommands_SelectedUser_CanExecute()
+    {
+        // Arrange
+        var userService = new FakeUserService();
+        var validator = new UserValidator();
+
+        var viewModel = new UserViewModel(
+            userService,
+            validator);
+
+        // Act
+        viewModel.SelectedUser = new User
+        {
+            Id = 1,
+            Name = "Matous",
+            CreatedAt = DateTime.UtcNow
+        };
+
+        // Assert
+        Assert.True(viewModel.UpdateCommand.CanExecute(null));
+        Assert.True(viewModel.DeleteCommand.CanExecute(null));
+    }
 }
+

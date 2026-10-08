@@ -27,15 +27,20 @@ namespace PostgresWpfDemo.ViewModels
         public User? SelectedUser
         {
             get => _selectedUser;
+
             set
             {
+                if (_selectedUser == value)
+                    return;
+
                 _selectedUser = value;
                 OnPropertyChanged();
 
-                if (_selectedUser != null)
-                {
+                if (_selectedUser is not null)
                     NewUserName = _selectedUser.Name;
-                }
+
+                UpdateCommand.RaiseCanExecuteChanged();
+                DeleteCommand.RaiseCanExecuteChanged();
             }
         }
 
@@ -59,8 +64,14 @@ namespace PostgresWpfDemo.ViewModels
             Users = [];
 
             AddCommand = new AsyncRelayCommand(AddUserAsync);
-            UpdateCommand = new AsyncRelayCommand(UpdateUserAsync);
-            DeleteCommand = new AsyncRelayCommand(DeleteUserAsync);
+
+            UpdateCommand = new AsyncRelayCommand(
+                UpdateUserAsync,
+                () => SelectedUser is not null);
+
+            DeleteCommand = new AsyncRelayCommand(
+                DeleteUserAsync,
+                () => SelectedUser is not null);
         }
 
         private async Task AddUserAsync()
