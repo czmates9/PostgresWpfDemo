@@ -20,9 +20,13 @@ public partial class App : Application
             .ConfigureServices((context, services) =>
             {
                 var connectionString =
-                    context.Configuration.GetConnectionString("Postgres")
-                    ?? throw new InvalidOperationException(
-                        "Connection string 'Postgres' was not found.");
+     context.Configuration.GetConnectionString("Postgres");
+
+                if (string.IsNullOrWhiteSpace(connectionString))
+                {
+                    throw new InvalidOperationException(
+                        "Connection string 'Postgres' was not configured.");
+                }
 
                 services.AddDbContextFactory<AppDbContext>(
                     options =>
