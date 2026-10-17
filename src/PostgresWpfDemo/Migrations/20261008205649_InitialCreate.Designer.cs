@@ -12,8 +12,8 @@ using PostgresWpfDemo.Data;
 namespace PostgresWpfDemo.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20261003195728_InitialBaseline")]
-    partial class InitialBaseline
+    [Migration("20261008205649_InitialCreate")]
+    partial class InitialCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -37,6 +37,10 @@ namespace PostgresWpfDemo.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("created_at");
+
+                    b.Property<string>("Email")
+                        .HasColumnType("text")
+                        .HasColumnName("email");
 
                     b.Property<string>("Name")
                         .IsRequired()

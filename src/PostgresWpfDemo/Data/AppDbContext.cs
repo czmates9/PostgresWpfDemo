@@ -1,46 +1,33 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using PostgresWpfDemo.Models;
 
-namespace PostgresWpfDemo.Data
+namespace PostgresWpfDemo.Data;
+
+public sealed class AppDbContext(
+    DbContextOptions<AppDbContext> options)
+    : DbContext(options)
 {
-    public class AppDbContext : DbContext
+    public DbSet<User> Users => Set<User>();
+
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        public DbSet<User> Users => Set<User>();
-
-        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+        modelBuilder.Entity<User>(entity =>
         {
-            string? connectionString =
-                Environment.GetEnvironmentVariable("POSTGRESWPFDEMO_CONNECTION");
+            entity.ToTable("users");
 
-            if (string.IsNullOrWhiteSpace(connectionString))
-            {
-                throw new InvalidOperationException(
-                    "Chybí environment variable POSTGRESWPFDEMO_CONNECTION.");
-            }
+            entity.HasKey(user => user.Id);
 
-            optionsBuilder.UseNpgsql(connectionString);
-        }
+            entity.Property(user => user.Id)
+                .HasColumnName("id");
 
-        protected override void OnModelCreating(ModelBuilder modelBuilder)
-        {
-            modelBuilder.Entity<User>(entity =>
-            {
-                entity.ToTable("users");
+            entity.Property(user => user.Name)
+                .HasColumnName("name");
 
-                entity.HasKey(x => x.Id);
+            entity.Property(user => user.Email)
+                .HasColumnName("email");
 
-                entity.Property(x => x.Id)
-                    .HasColumnName("id");
-
-                entity.Property(x => x.Name)
-                    .HasColumnName("name");
-
-                entity.Property(x => x.Email)
-                    .HasColumnName("email");
-
-                entity.Property(x => x.CreatedAt)
-                    .HasColumnName("created_at");
-            });
-        }
+            entity.Property(user => user.CreatedAt)
+                .HasColumnName("created_at");
+        });
     }
 }
