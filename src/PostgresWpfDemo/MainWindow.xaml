@@ -5,62 +5,84 @@
         Height="450"
         Width="800">
 
+    <Window.Resources>
+        <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
+    </Window.Resources>
+
     <Grid Margin="20">
 
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
-        <TextBlock Text="Správa uživatelů"
+        <TextBlock Grid.Row="0"
+                   Text="Správa uživatelů"
                    FontSize="24"
                    FontWeight="Bold"
                    Margin="0,0,0,20"/>
 
         <StackPanel Grid.Row="1"
                     Orientation="Horizontal"
-                    Margin="0,0,0,20">
+                    Margin="0,0,0,15">
 
             <TextBox Width="200"
-         Margin="0,0,10,0"
-         Text="{Binding NewUserName, UpdateSourceTrigger=PropertyChanged}"/>
+                     Margin="0,0,10,0"
+                     Text="{Binding NewUserName,
+                                    UpdateSourceTrigger=PropertyChanged}"/>
 
             <Button Content="Přidat"
-        Width="100"
-        Command="{Binding AddCommand}"/>
-            <Button Content="Upravit"
-        Width="100"
-        Margin="10,0,0,0"
-        Command="{Binding UpdateCommand}"/>
+                    Width="100"
+                    Command="{Binding AddCommand}"/>
 
+            <Button Content="Upravit"
+                    Width="100"
+                    Margin="10,0,0,0"
+                    Command="{Binding UpdateCommand}"/>
 
             <Button Content="Smazat"
-        Width="100"
-        Margin="10,0,0,0"
-        Command="{Binding DeleteCommand}"/>
+                    Width="100"
+                    Margin="10,0,0,0"
+                    Command="{Binding DeleteCommand}"/>
 
         </StackPanel>
 
-        <DataGrid Grid.Row="2"
-          ItemsSource="{Binding Users}"
-          SelectedItem="{Binding SelectedUser}"
-          AutoGenerateColumns="False"
-          IsReadOnly="True">
+        <StackPanel Grid.Row="2"
+                    Margin="0,0,0,15">
+
+            <TextBlock Text="Probíhá operace..."
+                       FontStyle="Italic"
+                       Visibility="{Binding IsBusy,
+                                            Converter={StaticResource BooleanToVisibilityConverter}}"/>
+
+            <TextBlock Text="{Binding ErrorMessage}"
+                       Foreground="Red"
+                       FontWeight="SemiBold"
+                       Margin="0,5,0,0"/>
+
+        </StackPanel>
+
+        <DataGrid Grid.Row="3"
+                  ItemsSource="{Binding Users}"
+                  SelectedItem="{Binding SelectedUser}"
+                  AutoGenerateColumns="False"
+                  IsReadOnly="True">
 
             <DataGrid.Columns>
 
                 <DataGridTextColumn Header="ID"
-                            Binding="{Binding Id}"
-                            Width="80"/>
+                                    Binding="{Binding Id}"
+                                    Width="80"/>
 
                 <DataGridTextColumn Header="Jméno"
-                            Binding="{Binding Name}"
-                            Width="*"/>
+                                    Binding="{Binding Name}"
+                                    Width="*"/>
 
                 <DataGridTextColumn Header="Vytvořeno"
-                            Binding="{Binding CreatedAt}"
-                            Width="200"/>
+                                    Binding="{Binding CreatedAt}"
+                                    Width="200"/>
 
             </DataGrid.Columns>
 

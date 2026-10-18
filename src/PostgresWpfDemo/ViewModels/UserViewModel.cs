@@ -1,12 +1,10 @@
 ﻿using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
-using System.Windows.Input;
 using PostgresWpfDemo.Commands;
 using PostgresWpfDemo.Models;
 using PostgresWpfDemo.Services;
 using PostgresWpfDemo.Validation;
-
 
 namespace PostgresWpfDemo.ViewModels
 {
@@ -21,6 +19,8 @@ namespace PostgresWpfDemo.ViewModels
 
         private User? _selectedUser;
         private string _newUserName = string.Empty;
+        private bool _isBusy;
+        private string? _errorMessage;
 
         public ObservableCollection<User> Users { get; }
 
@@ -37,7 +37,9 @@ namespace PostgresWpfDemo.ViewModels
                 OnPropertyChanged();
 
                 if (_selectedUser is not null)
+                {
                     NewUserName = _selectedUser.Name;
+                }
 
                 UpdateCommand.RaiseCanExecuteChanged();
                 DeleteCommand.RaiseCanExecuteChanged();
@@ -47,9 +49,45 @@ namespace PostgresWpfDemo.ViewModels
         public string NewUserName
         {
             get => _newUserName;
+
             set
             {
+                if (_newUserName == value)
+                    return;
+
                 _newUserName = value;
+                OnPropertyChanged();
+            }
+        }
+
+        public bool IsBusy
+        {
+            get => _isBusy;
+
+            set
+            {
+                if (_isBusy == value)
+                    return;
+
+                _isBusy = value;
+                OnPropertyChanged();
+
+                AddCommand.RaiseCanExecuteChanged();
+                UpdateCommand.RaiseCanExecuteChanged();
+                DeleteCommand.RaiseCanExecuteChanged();
+            }
+        }
+
+        public string? ErrorMessage
+        {
+            get => _errorMessage;
+
+            set
+            {
+                if (_errorMessage == value)
+                    return;
+
+                _errorMessage = value;
                 OnPropertyChanged();
             }
         }
@@ -63,35 +101,53 @@ namespace PostgresWpfDemo.ViewModels
 
             Users = [];
 
-            AddCommand = new AsyncRelayCommand(AddUserAsync);
+            AddCommand = new AsyncRelayCommand(
+     AddUserAsync,
+     () => !IsBusy);
 
             UpdateCommand = new AsyncRelayCommand(
                 UpdateUserAsync,
-                () => SelectedUser is not null);
+                () => !IsBusy && SelectedUser is not null);
 
             DeleteCommand = new AsyncRelayCommand(
                 DeleteUserAsync,
-                () => SelectedUser is not null);
+                () => !IsBusy && SelectedUser is not null);
         }
 
         private async Task AddUserAsync()
         {
-            var validationResult = _userValidator.ValidateName(NewUserName);
+            var validationResult =
+                _userValidator.ValidateName(NewUserName);
 
             if (validationResult != UserNameValidationResult.Valid)
                 return;
 
-            var user = new User
+            try
             {
-                Name = NewUserName.Trim(),
-                CreatedAt = DateTime.UtcNow
-            };
+                IsBusy = true;
+                ErrorMessage = null;
 
-            await _userService.AddAsync(user);
+                var user = new User
+                {
+                    Name = NewUserName.Trim(),
+                    CreatedAt = DateTime.UtcNow
+                };
 
-            NewUserName = string.Empty;
+                await _userService.AddAsync(user);
 
-            await LoadUsersAsync();
+                NewUserName = string.Empty;
+
+                await LoadUsersAsync();
+            }
+            catch
+            {
+                ErrorMessage =
+                    "Nepodařilo se přidat uživatele.";
+            }
+            finally
+            {
+                IsBusy = false;
+            }
         }
 
         private async Task UpdateUserAsync()
@@ -99,43 +155,93 @@ namespace PostgresWpfDemo.ViewModels
             if (SelectedUser is null)
                 return;
 
-            var validationResult = _userValidator.ValidateName(NewUserName);
+            var validationResult =
+                _userValidator.ValidateName(NewUserName);
 
             if (validationResult != UserNameValidationResult.Valid)
                 return;
 
-            SelectedUser.Name = NewUserName.Trim();
+            try
+            {
+                IsBusy = true;
+                ErrorMessage = null;
 
-            await _userService.UpdateAsync(SelectedUser);
+                SelectedUser.Name =
+                    NewUserName.Trim();
 
-            NewUserName = string.Empty;
-            SelectedUser = null;
+                await _userService.UpdateAsync(
+                    SelectedUser);
 
-            await LoadUsersAsync();
+                NewUserName = string.Empty;
+                SelectedUser = null;
+
+                await LoadUsersAsync();
+            }
+            catch
+            {
+                ErrorMessage =
+                    "Nepodařilo se upravit uživatele.";
+            }
+            finally
+            {
+                IsBusy = false;
+            }
         }
 
         private async Task DeleteUserAsync()
         {
-            if (SelectedUser == null)
+            if (SelectedUser is null)
                 return;
 
-            await _userService.DeleteAsync(SelectedUser);
+            try
+            {
+                IsBusy = true;
+                ErrorMessage = null;
 
-            NewUserName = string.Empty;
-            SelectedUser = null;
+                await _userService.DeleteAsync(
+                    SelectedUser);
 
-            await LoadUsersAsync();
+                NewUserName = string.Empty;
+                SelectedUser = null;
+
+                await LoadUsersAsync();
+            }
+            catch
+            {
+                ErrorMessage =
+                    "Nepodařilo se smazat uživatele.";
+            }
+            finally
+            {
+                IsBusy = false;
+            }
         }
 
         public async Task LoadUsersAsync()
         {
-            var users = await _userService.GetAllAsync();
-
-            Users.Clear();
-
-            foreach (var user in users)
+            try
             {
-                Users.Add(user);
+                IsBusy = true;
+                ErrorMessage = null;
+
+                var users =
+                    await _userService.GetAllAsync();
+
+                Users.Clear();
+
+                foreach (var user in users)
+                {
+                    Users.Add(user);
+                }
+            }
+            catch
+            {
+                ErrorMessage =
+                    "Nepodařilo se načíst uživatele.";
+            }
+            finally
+            {
+                IsBusy = false;
             }
         }
 
